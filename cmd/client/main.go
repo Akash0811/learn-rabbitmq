@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
 
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
@@ -40,10 +38,69 @@ func main() {
 		return
 	}
 
+	state := gamelogic.NewGameState(uname)
+
+	// Start REPL Game Loop
+	for {
+		inputs := gamelogic.GetInput()
+		if len(inputs) == 0 {
+			continue
+		}
+
+		// spawn command
+		if inputs[0] == "spawn" {
+			err = state.CommandSpawn(inputs)
+			if err != nil {
+				fmt.Printf("Failed due to %v\n", err)
+				fmt.Println("Example Usage: spawn europe infantry")
+			}
+			continue
+		}
+
+		// move command
+		if inputs[0] == "move" {
+			_, err = state.CommandMove(inputs)
+			if err != nil {
+				fmt.Printf("Failed due to %v\n", err)
+				fmt.Println("Example Usage: spawn europe infantry")
+			} else {
+				fmt.Println("Successful Move!")
+			}
+			continue
+		}
+
+		// status command
+		if inputs[0] == "status" {
+			state.CommandStatus()
+			continue
+		}
+
+		// help command
+		if inputs[0] == "help" {
+			gamelogic.PrintClientHelp()
+			continue
+		}
+
+		// spam command
+		if inputs[0] == "spam" {
+			fmt.Println("Spamming not allowed yet!")
+			continue
+		}
+
+		// quit command
+		if inputs[0] == "quit" {
+			gamelogic.PrintQuit()
+			break
+		}
+
+		// others
+		fmt.Println("Command is not recognized")
+	}
+
 	// wait for ctrl+c
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt)
-	<-signalChan
-	fmt.Println("Received CTRL+C...")
-	fmt.Println("Shutting Down...")
+	// signalChan := make(chan os.Signal, 1)
+	// signal.Notify(signalChan, os.Interrupt)
+	// <-signalChan
+	// fmt.Println("Received CTRL+C...")
+	// fmt.Println("Shutting Down...")
 }
