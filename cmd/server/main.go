@@ -27,6 +27,18 @@ func main() {
 		return
 	}
 
+	_, _, err = pubsub.DeclareAndBind(
+		conn,
+		routing.ExchangePerilTopic,
+		routing.GameLogSlug,
+		routing.GameLogSlug+".*",
+		pubsub.Durable,
+	)
+	if err != nil {
+		fmt.Printf("Failed to create Topic Queue due to %v", err)
+		return
+	}
+
 	// run the game
 	gamelogic.PrintServerHelp()
 	for {
