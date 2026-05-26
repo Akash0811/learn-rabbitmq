@@ -26,19 +26,16 @@ func main() {
 		return
 	}
 
-	_, _, err = pubsub.DeclareAndBind(
+	state := gamelogic.NewGameState(uname)
+
+	go pubsub.SubscribeJSON(
 		conn,
 		routing.ExchangePerilDirect,
 		fmt.Sprintf("%s.%s", routing.PauseKey, uname),
 		routing.PauseKey,
 		pubsub.Transient,
+		handlerPause(state),
 	)
-	if err != nil {
-		fmt.Printf("Failed to create queue due to %v\n", err)
-		return
-	}
-
-	state := gamelogic.NewGameState(uname)
 
 	// Start REPL Game Loop
 	for {
