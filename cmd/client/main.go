@@ -26,6 +26,12 @@ func main() {
 		return
 	}
 
+	channel, err := conn.Channel()
+	if err != nil {
+		fmt.Println("Failed to create channel")
+		return
+	}
+
 	state := gamelogic.NewGameState(uname)
 
 	go pubsub.SubscribeJSON(
@@ -35,6 +41,15 @@ func main() {
 		routing.PauseKey,
 		pubsub.Transient,
 		handlerPause(state),
+	)
+
+	go pubsub.SubscribeJSON(
+		conn,
+		routing.ExchangePerilTopic,
+		fmt.Sprintf("%s.%s", routing.ArmyMovesPrefix, uname),
+		fmt.Sprintf("%s.%s", routing.ArmyMovesPrefix, "*"),
+		pubsub.Transient,
+		handlerMove(state),
 	)
 
 	// Start REPL Game Loop
@@ -56,11 +71,20 @@ func main() {
 
 		// move command
 		if inputs[0] == "move" {
-			_, err = state.CommandMove(inputs)
+			move, err := state.CommandMove(inputs)
 			if err != nil {
-				fmt.Printf("Failed due to %v\n", err)
-				fmt.Println("Example Usage: spawn europe infantry")
+				fmt.Printf("Failed to move due to %v\n", err)
 			} else {
+				err = pubsub.PublishJSON(
+					channel,
+					routing.ExchangePerilTopic,
+					fmt.Sprintf("%s.%s", routing.ArmyMovesPrefix, uname),
+					move,
+				)
+				if err != nil {
+					fmt.Printf("Failed to move due to %v\n", err)
+					continue
+				}
 				fmt.Println("Successful Move!")
 			}
 			continue
