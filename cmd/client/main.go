@@ -49,9 +49,17 @@ func main() {
 		fmt.Sprintf("%s.%s", routing.ArmyMovesPrefix, uname),
 		fmt.Sprintf("%s.%s", routing.ArmyMovesPrefix, "*"),
 		pubsub.Transient,
-		handlerMove(state),
+		handlerMove(state, channel),
 	)
 
+	go pubsub.SubscribeJSON(
+		conn,
+		routing.ExchangePerilTopic,
+		"war",
+		fmt.Sprintf("%s.%s", routing.WarRecognitionsPrefix, "*"),
+		pubsub.Durable,
+		handlerMakeWar(state),
+	)
 	// Start REPL Game Loop
 	for {
 		inputs := gamelogic.GetInput()
