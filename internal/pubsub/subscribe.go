@@ -36,13 +36,18 @@ func SubscribeJSON[T any](
 		return err
 	}
 
+	err = channel.Qos(10, 0, false)
+	if err != nil {
+		return err
+	}
+
 	deliveryChannel, err := channel.Consume(queueName, "", false, false, false, false, nil)
 	if err != nil {
 		return err
 	}
 
 	for msg := range deliveryChannel {
-		go func(d amqp.Delivery) {
+		func(d amqp.Delivery) {
 			var v T
 			err := json.Unmarshal(d.Body, &v)
 			if err != nil {
@@ -101,13 +106,18 @@ func SubscribeGob[T any](
 		return err
 	}
 
+	err = channel.Qos(10, 0, false)
+	if err != nil {
+		return err
+	}
+
 	deliveryChannel, err := channel.Consume(queueName, "", false, false, false, false, nil)
 	if err != nil {
 		return err
 	}
 
 	for msg := range deliveryChannel {
-		go func(d amqp.Delivery) {
+		func(d amqp.Delivery) {
 			var v T
 			v, err := decodeGob[T](d.Body)
 			if err != nil {
