@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
@@ -112,7 +114,30 @@ func main() {
 
 		// spam command
 		if inputs[0] == "spam" {
-			fmt.Println("Spamming not allowed yet!")
+			if len(inputs) != 2 {
+				fmt.Println("Expecting a integer argument with spam")
+				continue
+			}
+
+			num, err := strconv.Atoi(inputs[1])
+			if err != nil {
+				fmt.Printf("Failed to convert integer due to %v\n", err)
+				continue
+			}
+
+			for i := 0; i < num; i++ {
+				maliciousLog := gamelogic.GetMaliciousLog()
+				pubsub.PublishGob(
+					channel,
+					routing.ExchangePerilTopic,
+					fmt.Sprintf("%s.%s", routing.GameLogSlug, uname),
+					routing.GameLog{
+						CurrentTime: time.Now(),
+						Message:     maliciousLog,
+						Username:    uname,
+					},
+				)
+			}
 			continue
 		}
 
