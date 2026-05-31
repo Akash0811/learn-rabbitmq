@@ -39,6 +39,16 @@ func main() {
 		return
 	}
 
+	// Subscribe to Game Logs
+	go pubsub.SubscribeGob(
+		conn,
+		routing.ExchangePerilTopic,
+		routing.GameLogSlug,
+		routing.GameLogSlug+".*",
+		pubsub.Durable,
+		handlerLog(),
+	)
+
 	// run the game
 	gamelogic.PrintServerHelp()
 	for {
