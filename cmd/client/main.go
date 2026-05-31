@@ -58,7 +58,7 @@ func main() {
 		"war",
 		fmt.Sprintf("%s.%s", routing.WarRecognitionsPrefix, "*"),
 		pubsub.Durable,
-		handlerMakeWar(state),
+		handlerMakeWar(state, channel),
 	)
 	// Start REPL Game Loop
 	for {
